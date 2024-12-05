@@ -1,11 +1,28 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
-name = "jsm-cve-report"
+name = "python-aegis"
 version = "0.1.0"
-description = ""
+description = "A tool to generate a report of CVEs from your packages. Supports Poetry, Pipenv and requirements.txt."
 authors = [
     "Nilton Frederico Teixeira <9078708+niltonfrederico@users.noreply.github.com>",
 ]
 readme = "README.md"
+license = "GPL-3.0"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Security",
+]
+packages = [{ include = 'aegis' }]
 
 [tool.poetry.dependencies]
 python = "^3.13"
@@ -19,10 +36,6 @@ cvss = "^3.3"
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.8.1"
 ipdb = "^0.13.13"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 # Same as Black.
