@@ -1,0 +1,47 @@
+# Contributing to python-aegis
+
+Thank you for considering contributing to `python-aegis`! We welcome contributions from the community. To ensure a smooth process, please follow these guidelines:
+
+## Code of Conduct
+
+We are committed to providing a welcoming and inclusive environment for everyone. By participating in this project, you agree to abide by the following guidelines:
+
+- **Respectful Communication**: Treat everyone with respect and kindness. Harassment, discrimination, or any form of inappropriate behavior will not be tolerated.
+- 
+- **Constructive Feedback**: Provide constructive feedback and be open to receiving it. Aim to improve the project collaboratively.
+
+- **Help Others**: If someone opens a duplicate issue, kindly reference the existing issue and provide a possible answer to their problem.
+
+Thank you for helping us create a positive and productive community!
+
+## Before Contributing
+
+- **Search for Existing Issues**: Before opening a new issue, please search the existing issues to see if your problem or feature request has already been addressed. If a duplicate issue is found, reference the existing issue and provide any additional information that might help resolve it.
+
+- **Branch Naming Convention**: When creating a branch for your changes, use the following naming convention: `{issue_number}-{name_of_the_feature_or_fix}`. This helps in keeping track of the changes related to specific issues.
+
+- **Update the CHANGELOG**: Ensure that you update the `CHANGELOG.md` file with a summary of your changes. This helps in maintaining a clear history of what has been modified in the project.
+
+- **Reference Existing Issues**: If you find a duplicate issue, reference the existing issue and provide any additional context or information that might help resolve it.
+
+## How to Contribute
+
+1. **Open an Issue**: Before making any changes, please open an issue to discuss the proposed changes. This helps us to keep track of all changes and ensures that your contribution aligns with the project's goals.
+
+2. **Fork the Repository**: Fork the repository to your own GitHub account and clone it to your local machine.
+
+3. **Create a Branch**: Create a new branch for your changes. Use a descriptive name for your branch (e.g., `{issue_number}-{name_of_the_feature_or_fix}`).
+
+4. **Make Changes**: Make your changes in the new branch. Ensure that your code follows the project's coding standards and includes appropriate tests.
+
+5. **Commit Changes**: Commit your changes with a clear and concise commit message.
+
+6. **Push to GitHub**: Push your changes to your forked repository on GitHub.
+
+7. **Create a Pull Request**: Create a pull request from your branch to the `main` branch of the original repository. Include a reference to the issue you opened in the pull request description.
+
+## Contact
+
+If you have any questions or need further assistance, feel free to open an issue or contact the project maintainers.
+
+Thank you for your contributions!
