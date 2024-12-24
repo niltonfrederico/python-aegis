@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Any
 from typing import TypedDict
 
-from utils import snake_case_response
+from aegis.utils import snake_case_response
 
 
 class CveReference(TypedDict):
@@ -89,7 +89,7 @@ class VulnerabilityResponseData(TypedDict):
     cvss3Vector: str
 
 
-class CveResponseData(TypedDict, total=False):
+class OsvCveResponseData(TypedDict, total=False):
     id: str
     details: str
     aliases: list[str]
@@ -99,6 +99,14 @@ class CveResponseData(TypedDict, total=False):
     affected: list[CveAffected]
     schema_version: str
     severity: list[CveSeverity]
+
+
+@snake_case_response
+class MitreCveResponseData(TypedDict, total=False):
+    id: str
+    details: str
+    severity: str
+    published: str
 
 
 class Package(TypedDict):

@@ -6,16 +6,17 @@ import sys
 
 from decimal import Decimal
 
-from clients import get_cve_info
-from clients import get_github_file
-from clients import get_package_info
-from datatypes import Package
-from datatypes import PackageResult
-from datatypes import Result
-from packages import get_packages
 from requests.exceptions import HTTPError
-from utils import get_score_and_severity_from_cvss
 
+from aegis.clients import get_cve_info_from_mitre
+from aegis.clients import get_cve_info_from_osv
+from aegis.clients import get_github_file
+from aegis.clients import get_package_info
+from aegis.datatypes import Package
+from aegis.datatypes import PackageResult
+from aegis.datatypes import Result
+from aegis.packages import get_packages
+from aegis.utils import get_score_and_severity_from_cvss
 from reports import generate_report
 
 
@@ -49,18 +50,26 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "repository",
         nargs="?",
-        type=_validate_repository,
-        help="Repository name (owner/repository).",
+        type=_validate_path_repository,
+        help="Foder path or Github Repository name (owner/repository).",
         default=EMPTY_ARG,
     )
 
     return parser.parse_args()
 
 
-def _validate_repository(value: str | None) -> str:
+def _get_dependencies_from_folder(path_string: str) -> bytes:
+    return path_string
+
+
+def _validate_path_repository(value: str | None) -> str:
     if value == EMPTY_ARG:
-        error_message = "Repository is required."
+        error_message = "Folder Path/Repository is required."
         raise argparse.ArgumentTypeError(error_message)
+
+    # lock_file = _get_dependencies_from_folder(value) or _get_dependencies_from_github(
+    #     value
+    # )
 
     if "/" not in value:
         error_message = "Repository must be in the format owner/repository."
@@ -72,7 +81,7 @@ def _validate_repository(value: str | None) -> str:
 def get_cve_if_not_cve(advisory_key: str) -> str:
     logger.info("get_cve_if_not_cve: %s", advisory_key)
     if not advisory_key.startswith("CVE"):
-        vulnerability_info = get_cve_info(advisory_key)
+        vulnerability_info = get_cve_info_from_osv(advisory_key)
         return next(
             (
                 alias
@@ -95,15 +104,14 @@ def parse_version_ranges(text: str) -> list[str]:
         List of version ranges in format ">=lowest_version<=highest_version"
     """
     # Pattern to match "X.Y before X.Y.Z"
-    pattern = r"(\d+\.\d+)(?:\.\d+)? before (\d+\.\d+\.\d+)"
+    pattern = r"(\d+)(?:\.([a-zA-Z0-9]+))?(?:\.([a-zA-Z0-9]+))?(?:\.([a-zA-Z0-9]+))?"
     matches = re.finditer(pattern, text)
 
     ranges = []
     for match in matches:
-        base, highest = match.groups()
-        # Construct lowest version by adding .0
-        lowest = f"{base}.0"
-        ranges.append(f">={lowest}<={highest}")
+        version = match.group()
+        logger.debug("Match: %s", version)
+        ranges.append(version)
 
     return ranges
 
@@ -130,14 +138,22 @@ def process_package(package: Package) -> list[PackageResult]:
             logger.warning("No CVE found for advisory key: %s", advisory_key)
             continue
 
-        vulnerability_info = get_cve_info(cve)
+        try:
+            vulnerability_info = get_cve_info_from_osv(cve)
+        except HTTPError as exc:
+            logger.warning(
+                "Error getting vulnerability data: %s, fallbacking to cveawg.mite.org",
+                exc.response.status_code,
+            )
+            vulnerability_info = get_cve_info_from_mitre(cve)
+
         logger.debug("Vulnerability info: %s", vulnerability_info)
 
         affected_versions = parse_version_ranges(vulnerability_info["details"])
 
         if "severity" in vulnerability_info:
             score, severity, descriptions = get_score_and_severity_from_cvss(
-                vulnerability_info["severity"][-1]["score"],
+                vulnerability_info["severity"],
             )
         elif "database_specific" in vulnerability_info:
             score = Decimal("0.0")
@@ -149,7 +165,7 @@ def process_package(package: Package) -> list[PackageResult]:
             severity = "UNKNOWN"
             descriptions = []
 
-        aliases = vulnerability_info.get("aliases", [])
+        aliases = [cve, *vulnerability_info.get("aliases", [])]
 
         package_result = PackageResult(
             package_name=package_name,

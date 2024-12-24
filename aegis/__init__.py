@@ -1,4 +1,4 @@
-from command import aegis
+from aegis.command import aegis
 
 
 VERSION = (0, 1, 0)

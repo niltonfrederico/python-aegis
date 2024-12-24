@@ -2,8 +2,8 @@ from typing import Literal
 
 import toml
 
-from datatypes import Package
-from datatypes import Packagers
+from aegis.datatypes import Package
+from aegis.datatypes import Packagers
 
 
 def get_packages_from_poetry_lock(file_string: str) -> list[Package]:

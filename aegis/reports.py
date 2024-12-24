@@ -4,7 +4,7 @@ from pathlib import Path
 
 import tablib
 
-from datatypes import Result
+from aegis.datatypes import Result
 
 
 def generate_report(project: str, all_packages: Result) -> None:

@@ -5,13 +5,15 @@ import subprocess
 
 from base64 import b64decode
 from dataclasses import dataclass
+from typing import Literal
 
 import requests
 
-from datatypes import CveResponseData
-from datatypes import PackageResponseData
-from datatypes import Packagers
-from datatypes import VulnerabilityResponseData
+from aegis.datatypes import MitreCveResponseData
+from aegis.datatypes import OsvCveResponseData
+from aegis.datatypes import PackageResponseData
+from aegis.datatypes import Packagers
+from aegis.datatypes import VulnerabilityResponseData
 
 
 logger = logging.getLogger("aegis")
@@ -62,6 +64,21 @@ class DepsDevClientConfig:
 
 
 @dataclass
+class MitreOrgClient:
+    api_url: str = "https://cveawg.mitre.org/api"
+    api_version: Literal[""] = ""
+    cve_data_endpoint: str = "/cve/:cve"
+
+    def cve_data_endpoint_url(self, cve: str) -> str:
+        return generate_endpoint_url(
+            self.api_url,
+            self.cve_data_endpoint,
+            self.api_version,
+            cve=cve,
+        )
+
+
+@dataclass
 class OsvClientConfig:
     api_url: str = "https://api.osv.dev"
     version: str = "/v1"
@@ -101,7 +118,7 @@ def get_vulnerability_info(cve: str) -> VulnerabilityResponseData:
     return VulnerabilityResponseData(**response.json())
 
 
-def get_cve_info(cve: str) -> CveResponseData:
+def get_cve_info_from_osv(cve: str) -> OsvCveResponseData:
     """Fetches CVE information from the OSV API."""
     url = OsvClientConfig().cve_data_endpoint_url(cve)
 
@@ -110,7 +127,34 @@ def get_cve_info(cve: str) -> CveResponseData:
     response.raise_for_status()
 
     # Parse the response
-    return CveResponseData(**response.json())
+    return OsvCveResponseData(**response.json())
+
+
+def get_cve_info_from_mitre(cve: str) -> MitreCveResponseData:
+    url = MitreOrgClient().cve_data_endpoint_url(cve)
+
+    # Make a request to the API
+    response = requests.get(url, timeout=5)
+    response.raise_for_status()
+
+    # Parse the response
+    response_json = response.json()
+    metrics = response_json["containers"]["adp"][0]["metrics"]
+    cvss_v3_1 = next(
+        (
+            metric["cvssV3_1"]["vectorString"]
+            for metric in metrics
+            if "cvssV3_1" in metric
+        ),
+        None,
+    )
+
+    return MitreCveResponseData(
+        id=response_json["cveMetadata"]["cveId"],
+        details=response_json["containers"]["cna"]["descriptions"][0]["value"],
+        severity=cvss_v3_1,
+        published=response_json["cveMetadata"]["datePublished"],
+    )
 
 
 def _run_process_and_return(
@@ -131,6 +175,23 @@ def _run_process_and_return(
     except subprocess.CalledProcessError:
         logger.exception("Error running command")
         return False
+
+
+def does_repository_exist(owner: str, repo: str) -> bool:
+    """
+    Check if a repository exists on GitHub.
+
+    Args:
+        owner: Repository owner
+        repo: Repository name
+    """
+    command = [
+        "gh",
+        "api",
+        f"repos/{owner}/{repo}",
+    ]
+
+    return bool(_run_process_and_return(command))
 
 
 def get_github_file(

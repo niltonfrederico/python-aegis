@@ -9,6 +9,7 @@ description = "A tool to generate a report of CVEs from your packages. Supports 
 authors = [
     "Nilton Frederico Teixeira <9078708+niltonfrederico@users.noreply.github.com>",
 ]
+repository = "https://github.com/niltonfrederico/python-aegis"
 readme = "README.md"
 license = "GPL-3.0"
 classifiers = [
@@ -23,6 +24,9 @@ classifiers = [
     "Topic :: Software Development :: Security",
 ]
 packages = [{ include = 'aegis' }]
+
+[tool.poetry.scripts]
+aegis = "aegis:aegis"
 
 [tool.poetry.dependencies]
 python = "^3.13"

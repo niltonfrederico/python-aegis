@@ -1,4 +1,4 @@
-from command import aegis
+from aegis.command import aegis
 
 
 # This is the entry point for the command line interface.
